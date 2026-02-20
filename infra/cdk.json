@@ -1,0 +1,24 @@
+{
+  "app": "npx tsx lib/lintellect-app.ts",
+  "watch": {
+    "include": ["**"],
+    "exclude": [
+      "README.md",
+      "cdk*.json",
+      "**/*.d.ts",
+      "**/*.js",
+      "tsconfig.json",
+      "node_modules",
+      "dist",
+      "coverage"
+    ]
+  },
+  "context": {
+    "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/core:target-partitions": ["aws"],
+    "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": true,
+    "@aws-cdk/core:stackRelativeExports": true,
+    "@aws-cdk/aws-apigateway:disableCloudWatchRole": true
+  }
+}

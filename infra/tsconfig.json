@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": ".",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["lib/**/*.ts", "lambdas/**/*.ts"],
+  "references": [
+    { "path": "../packages/core" },
+    { "path": "../packages/providers" }
+  ]
+}
