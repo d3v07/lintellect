@@ -1,0 +1,20 @@
+{
+  "name": "@lintellect/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "parse-diff": "^0.11.1",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "ulid": "^2.3.0"
+  }
+}
