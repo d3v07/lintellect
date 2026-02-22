@@ -1,0 +1,21 @@
+{
+  "name": "@lintellect/providers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@lintellect/core": "*",
+    "openai": "^4.77.0"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.985.0"
+  }
+}
