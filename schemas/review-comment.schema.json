@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lintellect.dev/schemas/review-comment.schema.json",
+  "title": "ReviewComment",
+  "description": "An individual review comment produced by the LLM during a review pass. Each comment must cite specific evidence from the diff: a file path, a line number, and an exact code snippet. These evidence fields are validated by the Evidence Gate before the comment is posted to GitHub.",
+  "type": "object",
+  "required": [
+    "filePath",
+    "lineNumber",
+    "codeSnippet",
+    "severity",
+    "category",
+    "message",
+    "confidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "filePath": {
+      "type": "string",
+      "description": "File path relative to the repository root. Must exactly match a file path present in the PR diff. Validated by the Evidence Gate against the parsed diff file list.",
+      "minLength": 1,
+      "maxLength": 1024,
+      "examples": ["src/middleware/auth.ts", "pkg/handlers/user.go", "app/models/user.py"]
+    },
+    "lineNumber": {
+      "type": "integer",
+      "description": "The primary line number this comment refers to. Must be a line number that exists within a diff hunk for the cited file. Line numbers are 1-indexed. Validated by the Evidence Gate against the parsed diff hunk ranges.",
+      "minimum": 1,
+      "examples": [45]
+    },
+    "endLineNumber": {
+      "type": "integer",
+      "description": "End line number for multi-line comments. When present, the comment applies to the range [lineNumber, endLineNumber] inclusive. Must be greater than or equal to lineNumber. Optional -- omit for single-line comments.",
+      "minimum": 1,
+      "examples": [47]
+    },
+    "codeSnippet": {
+      "type": "string",
+      "description": "Exact code snippet copied from the diff at the cited line(s). Must be a verbatim substring of the source code at the cited line number(s). The Evidence Gate validates this by performing a whitespace-normalized match against the actual diff content. Do NOT paraphrase, summarize, or rewrite the code.",
+      "minLength": 1,
+      "maxLength": 5000,
+      "examples": ["if (token == null) return res.status(401).send();"]
+    },
+    "severity": {
+      "type": "string",
+      "description": "Severity level of the finding. Critical and warning indicate issues that should be fixed before merging. Suggestion and nitpick are optional improvements. The Evidence Gate validates that critical severity is justified by the evidence.",
+      "enum": ["critical", "warning", "suggestion", "nitpick"],
+      "examples": ["warning"]
+    },
+    "category": {
+      "type": "string",
+      "description": "The review dimension this comment belongs to. Must match the pass that produced it (structural comments come from the structural pass, etc.).",
+      "enum": ["structural", "logic", "style", "security"],
+      "examples": ["logic"]
+    },
+    "message": {
+      "type": "string",
+      "description": "The review comment text explaining the issue found. Should be clear, actionable, and specific. Should reference the cited code and explain why it is problematic.",
+      "minLength": 1,
+      "maxLength": 5000,
+      "examples": ["Using == null checks both null and undefined, which is correct. However, the token value is not trimmed before comparison, so a whitespace-only string would pass this check and proceed to JWT verification."]
+    },
+    "suggestion": {
+      "type": "string",
+      "description": "Optional suggested fix or improvement. May contain code that does NOT appear in the diff (this is the proposed replacement, not a citation). When present, displayed as a GitHub suggestion block.",
+      "minLength": 1,
+      "maxLength": 5000,
+      "examples": ["const trimmedToken = token?.trim();\nif (!trimmedToken) return res.status(401).send();"]
+    },
+    "confidence": {
+      "type": "number",
+      "description": "The LLM's self-assessed confidence in this finding, from 0.0 (no confidence) to 1.0 (certain). Used by the Evidence Gate as a secondary signal: comments with confidence below a configurable threshold (default: 0.3) may be downgraded or filtered.",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "examples": [0.85]
+    }
+  }
+}

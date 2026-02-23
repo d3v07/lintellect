@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lintellect.dev/schemas/provider-config.schema.json",
+  "title": "ProviderConfig",
+  "description": "Configuration for an LLM provider used by the Lintellect prompt-runner. Defines which provider to use, model parameters, timeout and retry behavior, and optional fallback. Loaded from environment variables, CLI flags, or a configuration file.",
+  "type": "object",
+  "required": [
+    "provider",
+    "modelId",
+    "temperature",
+    "maxOutputTokens",
+    "timeoutMs",
+    "retryPolicy"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "provider": {
+      "type": "string",
+      "description": "LLM provider identifier. Determines which adapter implementation is instantiated by the ProviderFactory.",
+      "enum": ["openrouter", "bedrock"],
+      "examples": ["openrouter"]
+    },
+    "modelId": {
+      "type": "string",
+      "description": "Model identifier in the provider's format. For claude-direct, use Anthropic model IDs (e.g., 'claude-sonnet-4-20250514'). For bedrock, use Bedrock model IDs (e.g., 'anthropic.claude-3-sonnet-20240229-v1:0').",
+      "minLength": 1,
+      "maxLength": 256,
+      "examples": [
+        "claude-sonnet-4-20250514",
+        "anthropic.claude-3-sonnet-20240229-v1:0",
+        "claude-haiku-3-5-20241022"
+      ]
+    },
+    "temperature": {
+      "type": "number",
+      "description": "Sampling temperature for LLM generation. Lower values produce more deterministic output. Each review pass overrides this with its own temperature, but this value serves as the default.",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 0.2,
+      "examples": [0.2]
+    },
+    "maxOutputTokens": {
+      "type": "integer",
+      "description": "Maximum number of tokens the LLM is allowed to generate per request. Controls the output budget for each review pass. Must be positive.",
+      "minimum": 1,
+      "maximum": 65536,
+      "default": 4096,
+      "examples": [4096]
+    },
+    "timeoutMs": {
+      "type": "integer",
+      "description": "Per-request timeout in milliseconds. If the LLM does not respond within this window, the request is cancelled and may be retried according to the retry policy.",
+      "minimum": 1,
+      "maximum": 600000,
+      "default": 60000,
+      "examples": [60000]
+    },
+    "retryPolicy": {
+      "type": "object",
+      "description": "Retry configuration for transient LLM failures (rate limits, server errors, network timeouts). Implements exponential backoff with optional jitter.",
+      "required": ["maxRetries", "baseDelayMs", "maxDelayMs", "jitter"],
+      "additionalProperties": false,
+      "properties": {
+        "maxRetries": {
+          "type": "integer",
+          "description": "Maximum number of retry attempts after the initial request fails. Set to 0 to disable retries.",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 3,
+          "examples": [3]
+        },
+        "baseDelayMs": {
+          "type": "integer",
+          "description": "Base delay in milliseconds for the first retry. Subsequent retries double this value (exponential backoff) up to maxDelayMs.",
+          "minimum": 1,
+          "maximum": 60000,
+          "default": 2000,
+          "examples": [2000]
+        },
+        "maxDelayMs": {
+          "type": "integer",
+          "description": "Maximum delay cap in milliseconds. Exponential backoff will not exceed this value regardless of retry count.",
+          "minimum": 1,
+          "maximum": 300000,
+          "default": 16000,
+          "examples": [16000]
+        },
+        "jitter": {
+          "type": "boolean",
+          "description": "Whether to add random jitter to the backoff delay. When true, the actual delay is a random value between 0 and the calculated backoff delay. Recommended to prevent thundering herd on shared rate limits.",
+          "default": true,
+          "examples": [true]
+        }
+      }
+    },
+    "fallbackProvider": {
+      "type": "string",
+      "description": "Optional fallback provider identifier. When the primary provider exhausts all retries or returns a non-retryable error, the prompt-runner automatically retries using this provider. Must be a valid provider enum value different from the primary provider.",
+      "enum": ["openrouter", "bedrock"],
+      "examples": ["bedrock"]
+    },
+    "region": {
+      "type": "string",
+      "description": "AWS region for the Bedrock provider. Required when provider is 'bedrock'. Ignored for 'claude-direct'. Must be a valid AWS region where Bedrock and the specified model are available.",
+      "pattern": "^[a-z]{2}-[a-z]+-[0-9]+$",
+      "examples": ["us-east-1", "us-west-2", "eu-west-1"]
+    },
+    "apiKeySecretArn": {
+      "type": "string",
+      "description": "ARN of the AWS Secrets Manager secret containing the Anthropic API key. Used by the claude-direct provider in AWS Lambda environments. In local/CLI environments, the API key is read from the ANTHROPIC_API_KEY environment variable instead.",
+      "pattern": "^arn:aws:secretsmanager:[a-z0-9-]+:[0-9]+:secret:.+$",
+      "examples": ["arn:aws:secretsmanager:us-east-1:123456789012:secret:lintellect/anthropic-api-key-AbCdEf"]
+    }
+  },
+  "if": {
+    "properties": {
+      "provider": {
+        "const": "bedrock"
+      }
+    }
+  },
+  "then": {
+    "required": ["region"]
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lintellect.dev/schemas/job-status.schema.json",
+  "title": "JobStatus",
+  "description": "DynamoDB job status record for a Lintellect review job. Tracks the lifecycle of a review from webhook receipt to comment posting. Written by the Step Functions state machine at each state transition. Queried by job ID, PR URL, or repository name.",
+  "type": "object",
+  "required": [
+    "jobId",
+    "status",
+    "prUrl",
+    "repoFullName",
+    "prNumber",
+    "headSha",
+    "baseSha",
+    "author",
+    "createdAt",
+    "updatedAt"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "jobId": {
+      "type": "string",
+      "description": "Unique identifier for this review job. UUID v4 format. Serves as the DynamoDB partition key.",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "examples": ["550e8400-e29b-41d4-a716-446655440000"]
+    },
+    "status": {
+      "type": "string",
+      "description": "Current status of the review job. Updated at each pipeline stage transition. Terminal states are COMPLETED, FAILED, and SKIPPED.",
+      "enum": [
+        "PENDING",
+        "VALIDATING",
+        "BUILDING_PACKET",
+        "PARSING_DIFF",
+        "GATHERING_CONTEXT",
+        "RUNNING_REVIEW",
+        "EVIDENCE_GATE",
+        "POSTING",
+        "COMPLETED",
+        "FAILED",
+        "SKIPPED"
+      ],
+      "examples": ["RUNNING_REVIEW"]
+    },
+    "prUrl": {
+      "type": "string",
+      "description": "Full URL of the pull request on GitHub. Used as a GSI partition key for looking up all jobs associated with a specific PR.",
+      "format": "uri",
+      "examples": ["https://github.com/acme-corp/backend-api/pull/42"]
+    },
+    "repoFullName": {
+      "type": "string",
+      "description": "Full repository name in owner/name format. Used as a GSI partition key for looking up all jobs for a repository.",
+      "pattern": "^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$",
+      "examples": ["acme-corp/backend-api"]
+    },
+    "prNumber": {
+      "type": "integer",
+      "description": "Pull request number within the repository.",
+      "minimum": 1,
+      "examples": [42]
+    },
+    "headSha": {
+      "type": "string",
+      "description": "Full SHA of the head (source) commit at the time the review was triggered.",
+      "pattern": "^[0-9a-f]{40}$",
+      "examples": ["def456abc789012345678901234567890abcd1234"]
+    },
+    "baseSha": {
+      "type": "string",
+      "description": "Full SHA of the base (target) commit at the time the review was triggered.",
+      "pattern": "^[0-9a-f]{40}$",
+      "examples": ["abc123def456789012345678901234567890abcd"]
+    },
+    "author": {
+      "type": "string",
+      "description": "GitHub login of the PR author.",
+      "minLength": 1,
+      "maxLength": 39,
+      "examples": ["dev1"]
+    },
+    "createdAt": {
+      "type": "string",
+      "description": "ISO 8601 timestamp of when this job record was created (job enqueued).",
+      "format": "date-time",
+      "examples": ["2026-02-07T10:00:00.000Z"]
+    },
+    "updatedAt": {
+      "type": "string",
+      "description": "ISO 8601 timestamp of the most recent status update.",
+      "format": "date-time",
+      "examples": ["2026-02-07T10:05:30.000Z"]
+    },
+    "errorMessage": {
+      "type": "string",
+      "description": "Human-readable error description when status is FAILED. Includes enough detail to diagnose the root cause without accessing CloudWatch logs.",
+      "minLength": 1,
+      "maxLength": 5000,
+      "examples": ["LLM provider returned CONTEXT_LENGTH_EXCEEDED: input tokens (210,000) exceed model maximum (200,000)."]
+    },
+    "failedStep": {
+      "type": "string",
+      "description": "Name of the pipeline step where the failure occurred. Corresponds to a Step Functions state name. Only present when status is FAILED.",
+      "minLength": 1,
+      "maxLength": 256,
+      "examples": ["RunReview", "ParseDiff", "EvidenceGate", "PostComment"]
+    },
+    "reviewUrl": {
+      "type": "string",
+      "description": "URL of the posted GitHub PR review. Only present when status is COMPLETED and the review was successfully posted.",
+      "format": "uri",
+      "examples": ["https://github.com/acme-corp/backend-api/pull/42#pullrequestreview-12345"]
+    },
+    "evidenceMetrics": {
+      "type": "object",
+      "description": "Metrics from the Evidence Gate validation step. Only present after the EVIDENCE_GATE step completes.",
+      "required": ["totalComments", "acceptedCount", "rejectedCount", "passRate"],
+      "additionalProperties": false,
+      "properties": {
+        "totalComments": {
+          "type": "integer",
+          "description": "Total number of comments produced by all four review passes before evidence validation.",
+          "minimum": 0,
+          "examples": [12]
+        },
+        "acceptedCount": {
+          "type": "integer",
+          "description": "Number of comments that passed evidence validation and will be posted.",
+          "minimum": 0,
+          "examples": [10]
+        },
+        "rejectedCount": {
+          "type": "integer",
+          "description": "Number of comments rejected by the Evidence Gate.",
+          "minimum": 0,
+          "examples": [2]
+        },
+        "passRate": {
+          "type": "number",
+          "description": "Ratio of accepted comments to total comments (acceptedCount / totalComments). Value between 0.0 and 1.0. When totalComments is 0, passRate is 1.0.",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "examples": [0.833]
+        }
+      }
+    },
+    "s3Prefix": {
+      "type": "string",
+      "description": "S3 key prefix under which all artifacts for this job are stored. Format: packets/{jobId}/",
+      "pattern": "^packets/[0-9A-HJKMNP-TV-Z]{26}/$",
+      "examples": ["packets/01HQXYZ123456789ABCDEF00/"]
+    },
+    "executionArn": {
+      "type": "string",
+      "description": "AWS Step Functions execution ARN for this job. Used for debugging and linking to the Step Functions console.",
+      "pattern": "^arn:aws:states:[a-z0-9-]+:[0-9]+:execution:.+$",
+      "examples": ["arn:aws:states:us-east-1:123456789012:execution:LintellectReviewPipeline:01HQXYZ123456789ABCDEF00"]
+    },
+    "expiresAt": {
+      "type": "integer",
+      "description": "TTL attribute for DynamoDB automatic deletion. Epoch seconds, set to createdAt + 90 days. DynamoDB automatically deletes expired items within approximately 48 hours of the TTL value.",
+      "minimum": 0,
+      "examples": [1715097600]
+    }
+  }
+}

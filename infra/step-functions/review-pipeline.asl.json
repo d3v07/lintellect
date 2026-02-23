@@ -1,0 +1,251 @@
+{
+  "Comment": "Lintellect Review Pipeline - Step Functions State Machine",
+  "StartAt": "ParseDiff",
+  "States": {
+    "ParseDiff": {
+      "Type": "Task",
+      "Resource": "${DiffWorkerArn}",
+      "TimeoutSeconds": 120,
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "JobFailed"
+        }
+      ],
+      "Next": "GatherContext"
+    },
+
+    "GatherContext": {
+      "Type": "Task",
+      "Resource": "${ContextWorkerArn}",
+      "TimeoutSeconds": 120,
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 2,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "JobFailed"
+        }
+      ],
+      "Next": "ParallelReview"
+    },
+
+    "ParallelReview": {
+      "Type": "Parallel",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "JobFailed"
+        }
+      ],
+      "Branches": [
+        {
+          "StartAt": "StructuralPass",
+          "States": {
+            "StructuralPass": {
+              "Type": "Task",
+              "Resource": "${ReviewWorkerArn}",
+              "Parameters": {
+                "jobId.$": "$.jobId",
+                "bucket.$": "$.bucket",
+                "artifacts.$": "$.artifacts",
+                "repository.$": "$.repository",
+                "pullRequest.$": "$.pullRequest",
+                "status.$": "$.status",
+                "passType": "structural"
+              },
+              "TimeoutSeconds": 300,
+              "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+                  "IntervalSeconds": 5,
+                  "MaxAttempts": 2,
+                  "BackoffRate": 2.0
+                }
+              ],
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "LogicPass",
+          "States": {
+            "LogicPass": {
+              "Type": "Task",
+              "Resource": "${ReviewWorkerArn}",
+              "Parameters": {
+                "jobId.$": "$.jobId",
+                "bucket.$": "$.bucket",
+                "artifacts.$": "$.artifacts",
+                "repository.$": "$.repository",
+                "pullRequest.$": "$.pullRequest",
+                "status.$": "$.status",
+                "passType": "logic"
+              },
+              "TimeoutSeconds": 300,
+              "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+                  "IntervalSeconds": 5,
+                  "MaxAttempts": 2,
+                  "BackoffRate": 2.0
+                }
+              ],
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "StylePass",
+          "States": {
+            "StylePass": {
+              "Type": "Task",
+              "Resource": "${ReviewWorkerArn}",
+              "Parameters": {
+                "jobId.$": "$.jobId",
+                "bucket.$": "$.bucket",
+                "artifacts.$": "$.artifacts",
+                "repository.$": "$.repository",
+                "pullRequest.$": "$.pullRequest",
+                "status.$": "$.status",
+                "passType": "style"
+              },
+              "TimeoutSeconds": 300,
+              "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+                  "IntervalSeconds": 5,
+                  "MaxAttempts": 2,
+                  "BackoffRate": 2.0
+                }
+              ],
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "SecurityPass",
+          "States": {
+            "SecurityPass": {
+              "Type": "Task",
+              "Resource": "${ReviewWorkerArn}",
+              "Parameters": {
+                "jobId.$": "$.jobId",
+                "bucket.$": "$.bucket",
+                "artifacts.$": "$.artifacts",
+                "repository.$": "$.repository",
+                "pullRequest.$": "$.pullRequest",
+                "status.$": "$.status",
+                "passType": "security"
+              },
+              "TimeoutSeconds": 300,
+              "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+                  "IntervalSeconds": 5,
+                  "MaxAttempts": 2,
+                  "BackoffRate": 2.0
+                }
+              ],
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "MergeResults"
+    },
+
+    "MergeResults": {
+      "Type": "Task",
+      "Resource": "${MergeResultsArn}",
+      "TimeoutSeconds": 30,
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 1,
+          "BackoffRate": 1.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "JobFailed"
+        }
+      ],
+      "Next": "EvidenceGate"
+    },
+
+    "EvidenceGate": {
+      "Type": "Task",
+      "Resource": "${EvidenceGateArn}",
+      "TimeoutSeconds": 60,
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 1,
+          "BackoffRate": 1.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "JobFailed"
+        }
+      ],
+      "Next": "PostComment"
+    },
+
+    "PostComment": {
+      "Type": "Task",
+      "Resource": "${CommentPosterArn}",
+      "TimeoutSeconds": 60,
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "JobFailed"
+        }
+      ],
+      "Next": "JobComplete"
+    },
+
+    "JobComplete": {
+      "Type": "Succeed"
+    },
+
+    "JobFailed": {
+      "Type": "Fail",
+      "Error": "ReviewPipelineFailed",
+      "Cause": "One or more steps in the review pipeline failed. Check CloudWatch logs for details."
+    }
+  }
+}
