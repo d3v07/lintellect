@@ -1,0 +1,132 @@
+/* ═══════════════════════════════════════════════════
+   Lintellect Admin — Standalone Styles
+   ═══════════════════════════════════════════════════ */
+:root {
+  --bg: #0e1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --accent: #f85149;
+  --green: #3fb950;
+  --blue: #58a6ff;
+  --yellow: #d29922;
+  --orange: #db6d28;
+  --radius: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+
+/* ── Boot / Loading ── */
+.admin-boot {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 100vh; gap: 24px;
+}
+.admin-logo { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+.admin-accent { color: var(--accent); }
+.admin-spinner {
+  width: 32px; height: 32px; border: 3px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Access Denied ── */
+.admin-denied { text-align: center; max-width: 380px; }
+.admin-denied h2 { font-size: 20px; margin-bottom: 8px; color: var(--accent); }
+.admin-denied p { color: var(--text-muted); font-size: 14px; }
+.admin-hint { margin-top: 16px; padding: 12px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); }
+
+/* ── Layout ── */
+.admin-layout { min-height: 100vh; }
+.admin-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+  background: var(--surface); position: sticky; top: 0; z-index: 10;
+}
+.admin-period { font-size: 13px; color: var(--text-muted); font-family: monospace; }
+.admin-main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+/* ── Stats Row ── */
+.admin-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.admin-stat {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 20px; text-align: center;
+}
+.admin-stat-num { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.admin-stat-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-top: 4px; }
+.admin-stat-free .admin-stat-num { color: var(--blue); }
+.admin-stat-pro .admin-stat-num { color: var(--green); }
+.admin-stat-reviews .admin-stat-num { color: var(--yellow); }
+
+/* ── Panel / Table ── */
+.admin-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.admin-panel-title { padding: 16px 20px; font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--border); }
+.admin-table-wrap { overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.admin-table th {
+  text-align: left; padding: 10px 16px; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border);
+  background: var(--bg); position: sticky; top: 0;
+}
+.admin-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.admin-user-row:hover { background: rgba(88, 166, 255, 0.04); }
+
+/* ── User Cell ── */
+.admin-user-cell { display: flex; align-items: center; gap: 10px; }
+.admin-avatar { width: 32px; height: 32px; border-radius: 50%; }
+.admin-user-login { font-weight: 500; }
+
+/* ── Badges ── */
+.admin-badge {
+  display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px;
+  border-radius: 12px; text-transform: uppercase; letter-spacing: 0.3px;
+}
+.admin-badge-free { background: rgba(88, 166, 255, 0.15); color: var(--blue); }
+.admin-badge-pro { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.admin-badge-admin { background: rgba(248, 81, 73, 0.15); color: var(--accent); }
+.admin-badge-pending { background: rgba(210, 153, 34, 0.15); color: var(--yellow); font-size: 10px; margin-left: 6px; }
+
+/* ── Usage Cell ── */
+.admin-usage-cell { display: flex; flex-direction: column; gap: 4px; }
+.admin-usage-bar { width: 80px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.admin-usage-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.3s; }
+
+/* ── Limit Editing ── */
+.admin-limit-val { cursor: pointer; padding: 2px 6px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+.admin-limit-val:hover { background: var(--border); }
+.admin-edit-limit { display: flex; align-items: center; gap: 4px; }
+.admin-edit-limit input {
+  width: 60px; padding: 4px 6px; font-size: 13px; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); color: var(--text);
+}
+.admin-edit-limit button {
+  padding: 4px 8px; font-size: 12px; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--surface); color: var(--text); cursor: pointer;
+}
+.admin-edit-limit button:hover { background: var(--border); }
+.admin-btn-cancel { color: var(--text-muted) !important; }
+
+/* ── Last Active ── */
+.admin-time { color: var(--text-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* ── Action Buttons ── */
+.admin-action-btn {
+  padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: 6px;
+  border: 1px solid var(--border); cursor: pointer; transition: all 0.15s;
+}
+.admin-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.admin-action-grant { background: rgba(63, 185, 80, 0.1); color: var(--green); border-color: rgba(63, 185, 80, 0.3); }
+.admin-action-grant:hover:not(:disabled) { background: rgba(63, 185, 80, 0.2); }
+.admin-action-revoke { background: rgba(248, 81, 73, 0.1); color: var(--accent); border-color: rgba(248, 81, 73, 0.3); }
+.admin-action-revoke:hover:not(:disabled) { background: rgba(248, 81, 73, 0.2); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .admin-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .admin-main { padding: 16px; }
+}
+@media (max-width: 480px) {
+  .admin-stats-row { grid-template-columns: 1fr; }
+}
