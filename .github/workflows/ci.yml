@@ -1,45 +1,32 @@
 name: CI
 
 on:
-  pull_request:
-    branches: [main]
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
 
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build packages
-        run: |
-          cd packages/core && npx tsc && cd ..
-          cd providers && npx tsc && cd ..
-          cd cli && npx tsc && cd ../..
-
-      - name: Type check
-        run: |
-          cd packages/core && npx tsc --noEmit
-          cd ../providers && npx tsc --noEmit
-          cd ../cli && npx tsc --noEmit
-          cd ../../infra && npx tsc --noEmit
+      - name: Lint
+        run: npm run lint
 
       - name: Run tests
-        run: npx vitest run --reporter=verbose
+        run: npx vitest run
 
       - name: Run tests with coverage
         run: npx vitest run --coverage
