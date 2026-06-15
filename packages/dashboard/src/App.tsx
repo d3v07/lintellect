@@ -121,7 +121,7 @@ export default function App() {
   const [providerList, setProviderList] = useState<LLMProvider[]>([])
 
   // App config (setup)
-  const [appConfigured, setAppConfigured] = useState<boolean | null>(null)
+  const [, setAppConfigured] = useState<boolean | null>(null)
   const [setupClientId, setSetupClientId] = useState('')
   const [setupClientSecret, setSetupClientSecret] = useState('')
   const [setupShowSecret, setSetupShowSecret] = useState(false)
@@ -163,7 +163,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState('')
   const [toast, setToast] = useState<{ msg: string; type: 'ok' | 'err' } | null>(null)
-  const toastTimer = useRef<ReturnType<typeof setTimeout>>()
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const showToast = (msg: string, type: 'ok' | 'err' = 'ok') => {
     if (toastTimer.current) clearTimeout(toastTimer.current)
@@ -936,6 +936,8 @@ export default function App() {
       </div>
     </div>
   )
+
+  if (!user) return null
 
   /* ── Build inline comment map for diff viewer ── */
   const commentsByFile: Record<string, ReviewComment[]> = {}
