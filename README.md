@@ -4,12 +4,10 @@ Serverless pull request review pipeline that turns a GitHub webhook into paralle
 
 Lintellect is a TypeScript monorepo for experimenting with review automation architecture: webhook ingestion, diff/context workers, provider adapters, schema validation, prompt runners, an evidence gate, and admin/dashboard surfaces. The repo is structured so the review pipeline can be tested locally while the deployment target remains AWS Lambda, Step Functions, S3, DynamoDB, and API Gateway.
 
-![Lintellect dashboard setup](docs/screenshots/lintellect-dashboard-setup.png)
-
 ## Contents
 
 - [At A Glance](#at-a-glance)
-- [Screenshot](#screenshot)
+- [Screenshot Gallery](#screenshot-gallery)
 - [Review Lifecycle](#review-lifecycle)
 - [Architecture](#architecture)
 - [Package Map](#package-map)
@@ -32,11 +30,11 @@ Lintellect is a TypeScript monorepo for experimenting with review automation arc
 | Local code | TypeScript workspaces with Vitest coverage |
 | UI surface | Admin/dashboard packages for configuration and review visibility |
 
-## Screenshot
+## Screenshot Gallery
 
-The current dashboard/admin work shows the setup state for configuring provider and review pipeline settings.
-
-![Lintellect setup screen](docs/screenshots/lintellect-dashboard-setup.png)
+| Image | Caption |
+|---|---|
+| ![Lintellect dashboard setup](docs/screenshots/lintellect-dashboard-setup.png) | Review pipeline dashboard setup state showing provider and evidence-gate configuration surfaces before packet execution. |
 
 ## Review Lifecycle
 
