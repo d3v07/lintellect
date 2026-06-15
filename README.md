@@ -34,8 +34,11 @@ Lintellect is a TypeScript monorepo for experimenting with review automation arc
 
 | Image | Caption |
 |---|---|
-| ![Lintellect dashboard setup](docs/screenshots/lintellect-dashboard-setup.png) | Review pipeline dashboard setup state showing provider and evidence-gate configuration surfaces before packet execution. |
-| ![Lintellect admin details](docs/screenshots/lintellect-dashboard-setup-right-pane.png) | Focused pane showing evidence-gate and provider config controls inside the dashboard workspace. |
+| ![Lintellect setup screen](docs/screenshots/lintellect-dashboard-setup.png) | Initial setup state for configuring provider and review pipeline settings before packet execution. |
+| ![Lintellect activity dashboard](docs/screenshots/lintellect-dashboard-activity.png) | Authenticated dashboard with review counts, monthly usage, pipeline stages, and recent review activity. |
+| ![Lintellect pull request list](docs/screenshots/lintellect-pull-request-list.png) | Pull request queue with connected repository selector, review filters, and reviewed PR indicators. |
+| ![Lintellect PR review detail](docs/screenshots/lintellect-pr-review-detail.png) | PR detail view with changed files, evidence-gated findings, severity labels, and review actions. |
+| ![Lintellect repository settings](docs/screenshots/lintellect-settings-repositories.png) | Repository settings screen for connecting repositories and managing review coverage. |
 
 ## Review Lifecycle
 
