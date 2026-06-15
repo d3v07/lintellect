@@ -35,6 +35,7 @@ Lintellect is a TypeScript monorepo for experimenting with review automation arc
 | Image | Caption |
 |---|---|
 | ![Lintellect dashboard setup](docs/screenshots/lintellect-dashboard-setup.png) | Review pipeline dashboard setup state showing provider and evidence-gate configuration surfaces before packet execution. |
+| ![Lintellect admin details](docs/screenshots/lintellect-dashboard-setup-right-pane.png) | Focused pane showing evidence-gate and provider config controls inside the dashboard workspace. |
 
 ## Review Lifecycle
 
